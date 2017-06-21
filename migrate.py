@@ -2,11 +2,12 @@ import subprocess
 import os
 import sys
 import yaml
+from multiprocessing import Pool
 
 
 def run_command(command, repo, cwd=sys.path[0]):
     output_log = open("logs/{0}.log".format(repo), "ab")
-    print "Running command {0}".format(" ".join(command))
+    print "[{0}] Running command {1}".format(repo, " ".join(command))
     subprocess.check_call(command, stdout=output_log, stderr=output_log, cwd=cwd)
 
 def get_repo_name_from_url(url):
@@ -66,7 +67,10 @@ def migrate_repo(repository):
 def main():
     create_log_folder()
     repositories = list_repositories()
-    for repository in repositories:
-        migrate_repo(repository)
+    pool = Pool(processes=4)              # start 4 worker processes
+    pool.map(migrate_repo, repositories)
+    pool.close()
+    pool.join()
 
-main()
+if __name__ == '__main__':
+    main()
