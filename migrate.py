@@ -31,8 +31,13 @@ def clone(url, repo):
     output_log = open("logs/{0}.log".format(repo), "ab")
     repo_url = "{0}/{1}".format(url, repo)
     command = ["git", "svn", "clone", "--stdlayout", "--authors-file=authors.txt", repo_url, repo]
-    print " ".join(command)
     subprocess.check_call(command, stdout=output_log, stderr=output_log)
+
+def clean(repo):
+    output_log = open("logs/{0}.log".format(repo), "ab")
+    command = ["java", "-Dfile.encoding=utf-8", "-jar", "../svn-migration-scripts.jar",
+               "clean-git", "--force"]
+    subprocess.check_call(command, stdout=output_log, stderr=output_log, cwd=repo)
 
 def main():
     create_log_folder()
