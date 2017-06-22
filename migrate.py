@@ -55,6 +55,28 @@ def git_svn_clean(repo):
     except subprocess.CalledProcessError:
         print "Error generated while cleaning repository {0}".format(repo)
 
+def git_checkout_all_branches(repo):
+    branches = subprocess.check_output(["git", "branch", "-r"], cwd=os.path.join(MIGRATION_DIR, repo))
+    branches = filter(None, branches.split("\n"))
+    strip_spaces = (lambda x: x.strip())
+    no_tags = (lambda x: "origin/tags/" not in x)
+    no_trunk = (lambda x: x != 'origin/trunk')
+    branches = map(strip_spaces, branches)
+    branches = filter(no_tags, branches)
+    branches = filter(no_trunk, branches)
+    for branch in branches:
+        try:
+            reset_branch = ["git", "reset", "--hard", "HEAD"]
+            checkout_branch = ["git", "checkout", "-b", branch.replace('origin/', ''), branch]
+            run_command(reset_branch, repo, os.path.join(MIGRATION_DIR, repo))
+            run_command(checkout_branch, repo, os.path.join(MIGRATION_DIR, repo))
+        except:
+            pass
+
+    run_command(["git", "reset", "--hard", "HEAD"], repo, os.path.join(MIGRATION_DIR, repo))
+    run_command(["git", "checkout", "master"], repo, os.path.join(MIGRATION_DIR, repo))
+
+
 def migrate_repo(repository):
     trunk = repository.get("trunk") or "trunk"
     tags = repository.get("tags") or "tags"
@@ -65,6 +87,7 @@ def migrate_repo(repository):
         git_svn_init(url, repo, trunk, tags, branches)
     git_svn_fetch(repo)
     git_svn_clean(repo)
+    git_checkout_all_branches(repo)
 
 def main():
     mkdir_p(LOGS_DIR)
