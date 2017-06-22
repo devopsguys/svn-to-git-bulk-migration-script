@@ -1,9 +1,11 @@
 import subprocess
 import os
 import sys
-import yaml
 from multiprocessing import Pool
+import yaml
 
+LOGS_DIR = "logs"
+MIGRATION_DIR = "migration"
 
 def run_command(command, repo, cwd=sys.path[0]):
     output_log = open("logs/{0}.log".format(repo), "ab")
@@ -14,9 +16,9 @@ def get_repo_name_from_url(url):
     repo = filter(None, url.split("/"))
     return repo[-1]
 
-def create_log_folder():
-    if not os.path.exists("logs"):
-        os.makedirs("logs")
+def mkdir_p(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 def cmd_exists(cmd):
     return subprocess.call("type " + cmd, shell=True, stdout=subprocess.PIPE,
@@ -29,8 +31,8 @@ def verify_environment():
     if verify.returncode == 1:
         raise verify.communicate()[0]
 
-def load_yaml_file(file):
-    yaml_file = open(file)
+def load_yaml_file(path):
+    yaml_file = open(path)
     dataset = yaml.safe_load(yaml_file)
     yaml_file.close()
     return dataset
@@ -39,17 +41,17 @@ def git_svn_init(url, repo, trunk, tags, branches):
     init_command = ["git", "svn", "init", url, repo,
                     "--trunk={0}".format(trunk), "--tags={0}".format(tags),
                     "--branches={0}".format(branches)]
-    run_command(init_command, repo)
+    run_command(init_command, repo, MIGRATION_DIR)
 
 def git_svn_fetch(repo):
     fetch_command = ["git", "svn", "fetch", "--authors-file=../authors.txt"]
-    run_command(fetch_command, repo, repo)
+    run_command(fetch_command, repo, os.path.join(MIGRATION_DIR, repo))
 
 def git_svn_clean(repo):
     clean_command = ["java", "-Dfile.encoding=utf-8", "-jar", "../svn-migration-scripts.jar",
                      "clean-git", "--force"]
     try:
-        run_command(clean_command, repo, repo)
+        run_command(clean_command, repo, os.path.join(MIGRATION_DIR, repo))
     except subprocess.CalledProcessError:
         print "Error generated while cleaning repository {0}".format(repo)
 
@@ -65,7 +67,8 @@ def migrate_repo(repository):
     git_svn_clean(repo)
 
 def main():
-    create_log_folder()
+    mkdir_p(LOGS_DIR)
+    mkdir_p(MIGRATION_DIR)
     config = load_yaml_file('config.yml')[0]
     repositories = load_yaml_file('repositories.yml')
     pool = Pool(processes=config.get('max-processes'))

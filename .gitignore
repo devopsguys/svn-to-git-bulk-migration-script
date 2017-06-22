@@ -104,3 +104,5 @@ Vagrantfile
 .vagrant/
 authors.txt
 repositories.yml
+migration/
+logs/
