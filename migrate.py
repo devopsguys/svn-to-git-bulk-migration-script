@@ -29,11 +29,11 @@ def verify_environment():
     if verify.returncode == 1:
         raise verify.communicate()[0]
 
-def list_repositories():
-    repositories_yml = open('repositories.yml')
-    repositories = yaml.safe_load(repositories_yml)
-    repositories_yml.close()
-    return repositories
+def load_yaml_file(file):
+    yaml_file = open(file)
+    dataset = yaml.safe_load(yaml_file)
+    yaml_file.close()
+    return dataset
 
 def git_svn_init(url, repo, trunk, tags, branches):
     init_command = ["git", "svn", "init", url, repo,
@@ -66,8 +66,9 @@ def migrate_repo(repository):
 
 def main():
     create_log_folder()
-    repositories = list_repositories()
-    pool = Pool(processes=4)              # start 4 worker processes
+    config = load_yaml_file('config.yml')[0]
+    repositories = load_yaml_file('repositories.yml')
+    pool = Pool(processes=config.get('max-processes'))
     pool.map(migrate_repo, repositories)
     pool.close()
     pool.join()

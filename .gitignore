@@ -99,6 +99,8 @@ ENV/
 
 # mypy
 .mypy_cache/
+
 Vagrantfile
 .vagrant/
 authors.txt
+repositories.yml
