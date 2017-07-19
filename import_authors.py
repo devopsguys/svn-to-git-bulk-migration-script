@@ -8,7 +8,7 @@ import csv
 reader = csv.reader(open('users.csv'))
 result = {}
 for row in reader:
-    key = row[0].strip()
+    key = row[0].strip().lower()
     if key in result:
         pass
     result[key] = row[1:]
@@ -18,11 +18,11 @@ with open('authors.txt') as f:
 authors = [x.strip() for x in authors] 
 
 new_authors_file = open('authors.txt.new', 'w')
+userlist = map(str.lower, result.keys())
+
 for author in authors:
     authorname = author.split(' ', 1)[0]
-    if authorname in result.keys():
-        author = "{0} = {1} {2} <{3}>".format(authorname, result[authorname][0].title().strip(), result[authorname][1].title().strip(), result[authorname][2])
+    if authorname.lower() in userlist:
+        author = "{0} = {1} {2} <{3}>".format(authorname, result[authorname.lower()][0].title().strip(), result[authorname.lower()][1].title().strip(), result[authorname.lower()][2])
+    print author
     print>>new_authors_file, author
-
-
-
