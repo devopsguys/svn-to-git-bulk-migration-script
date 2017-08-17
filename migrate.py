@@ -58,15 +58,21 @@ def git_svn_clean(repo):
         print "Error generated while cleaning repository {0}".format(repo)
 
 def migrate_repo(repository):
-    trunk = repository.get("trunk") or "trunk"
-    tags = repository.get("tags") or "tags"
-    branches = repository.get("branches") or "branches"
-    url = repository.get("repo")
-    repo = get_repo_name_from_url(url)
-    if not os.path.isdir(repo):
-        git_svn_init(url, repo, trunk, tags, branches)
-    git_svn_fetch(repo)
-    git_svn_clean(repo)
+    try:
+        trunk = repository.get("trunk") or "trunk"
+        tags = repository.get("tags") or "tags"
+        branches = repository.get("branches") or "branches"
+        url = repository.get("repo")
+        repo = get_repo_name_from_url(url)
+        repo_path = os.path.join(MIGRATION_DIR,repo)
+        if not os.path.isdir(repo_path):
+            git_svn_init(url, repo, trunk, tags, branches)
+        git_svn_fetch(repo)
+        git_svn_clean(repo)
+    except:
+        output_log = open("logs/{0}.error.log".format(repo), "ab")
+        e = sys.exc_info()[0]
+        output_log.write("%s" % e)
 
 def main():
     mkdir_p(LOGS_DIR)
