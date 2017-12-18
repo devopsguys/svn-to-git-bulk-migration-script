@@ -64,21 +64,25 @@ def migrate_repo(repository):
         branches = repository.get("branches") or "branches"
         url = repository.get("repo")
         repo = get_repo_name_from_url(url)
-        repo_path = os.path.join(MIGRATION_DIR,repo)
+	repo_path = os.path.join(MIGRATION_DIR,repo)
         if not os.path.isdir(repo_path):
             git_svn_init(url, repo, trunk, tags, branches)
         git_svn_fetch(repo)
         git_svn_clean(repo)
-    except:
+    except: 
         output_log = open("logs/{0}.error.log".format(repo), "ab")
         e = sys.exc_info()[0]
         output_log.write("%s" % e)
-
+    
 def main():
     mkdir_p(LOGS_DIR)
     mkdir_p(MIGRATION_DIR)
     config = load_yaml_file('config.yml')[0]
     repositories = load_yaml_file('repositories.yml')
+
+    # for repository in repositories:
+    #     migrate_repo(repository)
+
     pool = Pool(processes=config.get('max-processes'))
     pool.map(migrate_repo, repositories)
     pool.close()
