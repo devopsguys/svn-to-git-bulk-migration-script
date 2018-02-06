@@ -9,12 +9,18 @@ echo ""
 
 inprogress=0
 
-for D in `find migration -maxdepth 1 -type d`; do
+for D in `find migration/* -maxdepth 0 -type d`; do
 subdircount=`find $D -maxdepth 1 | grep -v ".git" | wc -l`
 if [ $subdircount -eq 1 ]
 then
   let "inprogress++"
-  echo $D | awk -F"/" '{print $2}'
+  echo $D | awk -F"/" '{printf $2}'
+  echo ' [Incomplete]'
+else
+  echo $D | awk -F"/" '{printf $2}'
+  echo -n " | "
+  echo -n `cd $D; git log -1 --format=%cd  --date=iso`
+  echo
 fi
 
 total=`find migration -maxdepth 1 -type d | wc -l`
