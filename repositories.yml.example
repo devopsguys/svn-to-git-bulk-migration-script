@@ -1,7 +1,6 @@
 ---
 - repo: http://svn.example.com/repo1/
 - repo: http://svn.example.com/repo1/repo2/
-- repo: http://svn.bolt.admiral.uk/repo3/
   trunk: "/"
   branches: "branches01"
   tags: "allthetags"
